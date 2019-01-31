@@ -4,17 +4,18 @@ var ready = false;
 var goldenRatio = 1.61803398875;
 var data = [];
 var planets = ['sun', 'mercury', 'venus', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-let focusPlanet = 'venus';
-let focusPlanet2 = 'earth';
+let focusPlanet = 'sun';
+let focusPlanet2 = 'jupiter';
 let baseUrl = 'http://127.0.0.1:5000/planet/';
 let GEO = 'geo';
 let HELIO = 'helio';
-let mode = HELIO;
+let mode = GEO;
 
-let startDate = new Date(2000,0,1);
-let endDate = new Date(2020,0,1);
+let startDate = new Date(2000, 0, 1);
+let endDate = new Date(2020, 0, 1);
+let currentDate = startDate;
 
-let radScale = 200;
+let radScale = 50;
 
 //let prevPos = null;
 //let pos = null;
@@ -36,13 +37,15 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(800, 600);
-noLoop();
-  slider = createSlider(startDate.getTime(),endDate.getTime(),startDate.getTime(),1);
-  slider.position(100,100);
-  slider.style('width','400px');
+  createCanvas(800, 800);
+  noLoop();
+  slider = createSlider(startDate.getTime(), endDate.getTime(), startDate.getTime(), 1);
+  slider.position(100, 30);
+  slider.style('width', '400px');
   slider.input(update);
- 
+
+
+  setInterval(update, 100);
 
 
   // let url = baseUrl + GEO + '/mercury/' + [1,1,1999].join('/');
@@ -50,17 +53,19 @@ noLoop();
   // console.log(startDate);
   // console.log(endDate);
   //loadJSON()
-  
+
 }
 
 function draw() {
   background('rgb(250,250,250)');
-  
-  let val = slider.value();
-  let date = new Date(val);
+
+  // let val = slider.value();
+  // let date = new Date(val);
+
+  let date = currentDate;
   noStroke();
   fill(0);
-  text(date.toDateString(),100,100);
+  text(date.toDateString(), 100, 70);
 
   //console.log(date);
   // push();
@@ -90,33 +95,39 @@ function draw() {
   // pop();
 
   push();
-  translate(width/2,height/2);
+  translate(width / 2, height / 2);
+
+  //draw the sun
+  fill(0);
+  ellipse(0,0,10,10);
   noFill();
-  stroke(0,100);
+  stroke(0, 100);
   for (let i = 0; i < positions.length; i++) {
     const p1 = positions[i];
     const p2 = positions2[i];
-    line(p1.x,p1.y,p2.x,p2.y);
+    line(p1.x, p1.y, p2.x, p2.y);
   }
   pop();
 
 }
 
-function update(){
+function update() {
   console.log('hi');
-  let val = slider.value();
-  let date = new Date(val);
+  //let val = slider.value();
+  // let date = new Date(val);
+  currentDate.setDate(currentDate.getDate() + 5);
+  let date = currentDate;
   let day = date.getDate();
-  let month = date.getMonth() +1;
+  let month = date.getMonth() + 1;
   let year = date.getFullYear();
-  let url1 = baseUrl + mode + '/' + focusPlanet +'/' + [day,month,year].join('/');
-  let url2 = baseUrl + mode + '/' + focusPlanet2 +'/' + [day,month,year].join('/');
+  let url1 = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
+  let url2 = baseUrl + mode + '/' + focusPlanet2 + '/' + [day, month, year].join('/');
   console.log(url1);
   console.log(url2);
   pos1 = null;
   pos2 = null;
-  loadJSON(url1,updatePos1);
-  loadJSON(url2,updatePos2);
+  loadJSON(url1, updatePos1);
+  loadJSON(url2, updatePos2);
 }
 
 // function updatePos(planet){
@@ -127,31 +138,31 @@ function update(){
 //   else if(pos1 && !pos2){
 //     updatePos2(planet);
 //   }
- 
+
 // }
 
-function updatePos1(planet){
+function updatePos1(planet) {
   console.log('updatePos1');
   let angle = planet.pos;
-  let r = radScale*planet.distance;
-  let v = p5.Vector.fromAngle(radians(angle),r);
+  let r = radScale * planet.distance;
+  let v = p5.Vector.fromAngle(radians(angle), r);
   pos1 = v;
   positions.push(v);
   tryRedraw();
 }
 
-function updatePos2(planet){
+function updatePos2(planet) {
   console.log('updatePos2');
   let angle = planet.pos;
-  let r = radScale*planet.distance;
-  let v = p5.Vector.fromAngle(radians(angle),r);
+  let r = radScale * planet.distance;
+  let v = p5.Vector.fromAngle(radians(angle), r);
   pos2 = v;
   positions2.push(v);
   tryRedraw();
 }
 
-function tryRedraw(){
-  if(pos1 && pos2){
+function tryRedraw() {
+  if (pos1 && pos2) {
     pos1 = null;
     pos2 = null;
     redraw();
