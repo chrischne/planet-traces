@@ -39,6 +39,7 @@ function preload() {
 
 function setup() {
   createCanvas(1200, 5000);
+
   noLoop();
   // slider = createSlider(startDate.getTime(), endDate.getTime(), startDate.getTime(), 1);
   // slider.position(100, 30);
@@ -68,13 +69,13 @@ function draw() {
   // fill(0);
   // text(date.toDateString(), 100, 70);
 
-  push();
-  translate(100, 100);
+ // push();
+  //translate(200, 500);
   planetsHeliocentric();
   // planetsGeocentric();
   // planetPairsHeliocentric();
   // planetPairsGeocatric();
-  pop();
+ // pop();
 
 
   //console.log(date);
@@ -125,9 +126,11 @@ function planetsHeliocentric() {
   //draw all the planets, their traces over a period of time 
   //drawing those traces, in a grid style
 
+
+
   //get the data for all planets
   let startDate = new Date(2000, 0, 1);
-  let endDate = new Date(2001, 0, 1);
+  let endDate = new Date(2010, 0, 1);
   let currentDate = startDate;
   let inc = 5;
 
@@ -135,15 +138,18 @@ function planetsHeliocentric() {
 
   let planetMap = new Map();
 
-  ready = false;
+
+  var promises = [];
   for (let i = 0; i < planets.length; i++) {
 
     const focusPlanet = planets[i];
     //console.log('focusPlanet',focusPlanet,i);
-    planetMap.set(focusPlanet, []);
+
     currentDate = new Date(startDate);
 
     let count = 0;
+
+
     while (currentDate < endDate && count < 100) {
 
       currentDate.setDate(currentDate.getDate() + inc);
@@ -153,52 +159,81 @@ function planetsHeliocentric() {
       let month = date.getMonth() + 1;
       let year = date.getFullYear();
       let url = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
-      loadJSON(url, function (planetData) {
-        planetData.date = new Date(year, month - 1, day);
-        let positions = planetMap.get(focusPlanet);
-        positions.push(planetData);
-      });
+      promises.push(d3.json(url))
 
       count++;
     }
-
-    console.log('===', focusPlanet, '===');
-    console.log(planetMap.get(focusPlanet));
   }
 
-  ready = true;
+  Promise.all(promises).then(function (values) {
+    console.log('Promise.all');
+    //console.log(values);
+    // planetMap.set(focusPlanet, values);
+    // console.log('===', focusPlanet, '===');
+    // console.log(planetMap.get(focusPlanet));
+
+    planets.forEach(p => {
+      let arr = values.filter(v => {
+        return v.name == p;
+      });
+      planetMap.set(p, arr);
+    });
+    console.log('planetMap');
+    console.log(planetMap);
+    drawPlanets(planetMap);
+
+  });
+}
+
+function drawPlanets(planetMap){
   //draw the planets
   let entries = planetMap.entries();
   let x = 0;
   let y = 0;
-  let pwidth = 50;
-  let globalRadius = pwidth/2;
+  let maxRadius = 100;
+  let plutoData = planetMap.get('pluto');
+  console.log(plutoData);
+  let maxDistance = d3.max(plutoData,d=>{
+    return d.distance;
+  });
+  console.log('maxDistance',maxDistance);
+  push();
+  translate(200,200);
   for (let [key, value] of entries) {
-    console.log(key,value);
+    //console.log(key,value);
     let planetName = key;
     let planetData = value;
-    console.log('planetData',planetData);
-    //now draw the planet based on the information 
+
+
+    push();
+    translate(x,y);
+    //draw the sun
+    fill(0);
+    noStroke();
+    ellipse(0,0,2,2);
     noFill();
     stroke(0);
-   //problem here is that data is not loaded here, due to async
-   //propose loading data in preload
-   //passing data to drawfunction which then just loops through 
-   //the planets and draws the shit
     beginShape();
-    console.log('hihi',planetData.length);
+    //console.log('hihi',planetData.length);
     for (let i = 0; i < planetData.length; i++) {
       const pdata = planetData[i];
       let angle = pdata.pos;
-      //let r = radScale * planet.distance;
-      let r = globalRadius;
+      let r = map(pdata.distance,0,maxDistance,0,maxRadius);
+  
       let v = p5.Vector.fromAngle(radians(angle), r);
-      
-      vertex(v.x,v.y);
+
+      vertex(v.x, v.y);
     }
     endShape();
+    pop();
+   
+    x+=maxRadius;
+    if(x>width){
+      x=0;
+      y+=maxRadius;
+    }
   }
-
+  pop();
 }
 
 function update() {
