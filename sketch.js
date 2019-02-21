@@ -135,6 +135,7 @@ function planetsHeliocentric() {
 
   let planetMap = new Map();
 
+  ready = false;
   for (let i = 0; i < planets.length; i++) {
 
     const focusPlanet = planets[i];
@@ -165,14 +166,37 @@ function planetsHeliocentric() {
     console.log(planetMap.get(focusPlanet));
   }
 
+  ready = true;
   //draw the planets
   let entries = planetMap.entries();
+  let x = 0;
+  let y = 0;
+  let pwidth = 50;
+  let globalRadius = pwidth/2;
   for (let [key, value] of entries) {
     console.log(key,value);
     let planetName = key;
-    let positions = value;
-
+    let planetData = value;
+    console.log('planetData',planetData);
     //now draw the planet based on the information 
+    noFill();
+    stroke(0);
+   //problem here is that data is not loaded here, due to async
+   //propose loading data in preload
+   //passing data to drawfunction which then just loops through 
+   //the planets and draws the shit
+    beginShape();
+    console.log('hihi',planetData.length);
+    for (let i = 0; i < planetData.length; i++) {
+      const pdata = planetData[i];
+      let angle = pdata.pos;
+      //let r = radScale * planet.distance;
+      let r = globalRadius;
+      let v = p5.Vector.fromAngle(radians(angle), r);
+      
+      vertex(v.x,v.y);
+    }
+    endShape();
   }
 
 }
