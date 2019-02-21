@@ -31,15 +31,17 @@ let radScale = 100;
 let sfMedium;
 let sfBold;
 let sfLight;
+let planetyears = {};
 function preload() {
   sfLight = loadFont('assets/SF-Pro-Text-Light.otf');
   sfMedium = loadFont('assets/SF-Pro-Text-Medium.otf');
   sfBold = loadFont('assets/SF-Pro-Display-Bold.otf');
+  planetyears = loadJSON('planetyears.json');
 }
 
 function setup() {
   createCanvas(1200, 5000);
-
+console.log(planetyears);
   noLoop();
   // slider = createSlider(startDate.getTime(), endDate.getTime(), startDate.getTime(), 1);
   // slider.position(100, 30);
@@ -128,13 +130,10 @@ function planetsHeliocentric() {
 
 
 
-  //get the data for all planets
-  let startDate = new Date(2000, 0, 1);
-  let endDate = new Date(2010, 0, 1);
-  let currentDate = startDate;
-  let inc = 5;
 
-  let mode = HELIO;
+  let inc = 10;
+
+  let mode = GEO;
 
   let planetMap = new Map();
 
@@ -143,14 +142,21 @@ function planetsHeliocentric() {
   for (let i = 0; i < planets.length; i++) {
 
     const focusPlanet = planets[i];
-    //console.log('focusPlanet',focusPlanet,i);
+    
+    let startDate = new Date(2000, 0, 1);
+    let endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate()+planetyears[focusPlanet]);
+    console.log('===',focusPlanet,'===');
+    console.log('startdate',startDate);
+    console.log('enddata',endDate);
+    let currentDate = startDate;
 
     currentDate = new Date(startDate);
 
     let count = 0;
 
 
-    while (currentDate < endDate && count < 100) {
+    while (currentDate < endDate ) {
 
       currentDate.setDate(currentDate.getDate() + inc);
       // console.log('count',count,currentDate);
@@ -186,6 +192,7 @@ function planetsHeliocentric() {
 }
 
 function drawPlanets(planetMap){
+  console.log('draw planets');
   //draw the planets
   let entries = planetMap.entries();
   let x = 0;
@@ -219,7 +226,7 @@ function drawPlanets(planetMap){
       const pdata = planetData[i];
       let angle = pdata.pos;
       let r = map(pdata.distance,0,maxDistance,0,maxRadius);
-  
+      
       let v = p5.Vector.fromAngle(radians(angle), r);
 
       vertex(v.x, v.y);
@@ -227,10 +234,10 @@ function drawPlanets(planetMap){
     endShape();
     pop();
    
-    x+=maxRadius;
-    if(x>width){
+    x+=maxRadius*2;
+    if(x>width-200){
       x=0;
-      y+=maxRadius;
+      y+=maxRadius*2;
     }
   }
   pop();
