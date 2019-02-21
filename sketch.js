@@ -3,29 +3,30 @@
 var ready = false;
 var goldenRatio = 1.61803398875;
 var data = [];
-var planets = ['sun', 'mercury', 'venus', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-let focusPlanet = 'sun';
-let focusPlanet2 = 'jupiter';
+//var planets = ['sun', 'mercury', 'venus', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+var planets = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+let focusPlanet = 'mars';
+let focusPlanet2 = 'venus';
 let baseUrl = 'http://127.0.0.1:5000/planet/';
 let GEO = 'geo';
 let HELIO = 'helio';
-let mode = GEO;
+//let mode = GEO;
 
-let startDate = new Date(2000, 0, 1);
-let endDate = new Date(2020, 0, 1);
-let currentDate = startDate;
+// let startDate = new Date(2000, 0, 1);
+// let endDate = new Date(2001, 0, 1);
+//let currentDate = startDate;
 
-let radScale = 50;
+let radScale = 100;
 
 //let prevPos = null;
 //let pos = null;
-let positions = [];
-let positions2 = [];
+// let positions = [];
+// let positions2 = [];
 
-let pos1 = null;
-let pos2 = null;
+// let pos1 = null;
+// let pos2 = null;
 
-let slider;
+// let slider;
 
 let sfMedium;
 let sfBold;
@@ -37,15 +38,15 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(1200, 5000);
   noLoop();
-  slider = createSlider(startDate.getTime(), endDate.getTime(), startDate.getTime(), 1);
-  slider.position(100, 30);
-  slider.style('width', '400px');
-  slider.input(update);
+  // slider = createSlider(startDate.getTime(), endDate.getTime(), startDate.getTime(), 1);
+  // slider.position(100, 30);
+  // slider.style('width', '400px');
+  // slider.input(update);
 
 
-  setInterval(update, 100);
+  //setInterval(update, 100);
 
 
   // let url = baseUrl + GEO + '/mercury/' + [1,1,1999].join('/');
@@ -62,10 +63,19 @@ function draw() {
   // let val = slider.value();
   // let date = new Date(val);
 
-  let date = currentDate;
-  noStroke();
-  fill(0);
-  text(date.toDateString(), 100, 70);
+  //let date = currentDate;
+  // noStroke();
+  // fill(0);
+  // text(date.toDateString(), 100, 70);
+
+  push();
+  translate(100, 100);
+  planetsHeliocentric();
+  // planetsGeocentric();
+  // planetPairsHeliocentric();
+  // planetPairsGeocatric();
+  pop();
+
 
   //console.log(date);
   // push();
@@ -94,20 +104,76 @@ function draw() {
   // line(p1.x,p1.y,p2.x,p2.y);
   // pop();
 
-  push();
-  translate(width / 2, height / 2);
+  // push();
+  // translate(width / 2, height / 2);
 
   //draw the sun
-  fill(0);
-  ellipse(0,0,10,10);
-  noFill();
-  stroke(0, 100);
-  for (let i = 0; i < positions.length; i++) {
-    const p1 = positions[i];
-    const p2 = positions2[i];
-    line(p1.x, p1.y, p2.x, p2.y);
+  // fill(0);
+  // ellipse(0,0,10,10);
+  // noFill();
+  // stroke(0, 10);
+  // for (let i = 0; i < positions.length; i++) {
+  //   const p1 = positions[i];
+  //   const p2 = positions2[i];
+  //   line(p1.x, p1.y, p2.x, p2.y);
+  // }
+  // pop();
+
+}
+
+function planetsHeliocentric() {
+  //draw all the planets, their traces over a period of time 
+  //drawing those traces, in a grid style
+
+  //get the data for all planets
+  let startDate = new Date(2000, 0, 1);
+  let endDate = new Date(2001, 0, 1);
+  let currentDate = startDate;
+  let inc = 5;
+
+  let mode = HELIO;
+
+  let planetMap = new Map();
+
+  for (let i = 0; i < planets.length; i++) {
+
+    const focusPlanet = planets[i];
+    //console.log('focusPlanet',focusPlanet,i);
+    planetMap.set(focusPlanet, []);
+    currentDate = new Date(startDate);
+
+    let count = 0;
+    while (currentDate < endDate && count < 100) {
+
+      currentDate.setDate(currentDate.getDate() + inc);
+      // console.log('count',count,currentDate);
+      let date = currentDate;
+      let day = date.getDate();
+      let month = date.getMonth() + 1;
+      let year = date.getFullYear();
+      let url = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
+      loadJSON(url, function (planetData) {
+        planetData.date = new Date(year, month - 1, day);
+        let positions = planetMap.get(focusPlanet);
+        positions.push(planetData);
+      });
+
+      count++;
+    }
+
+    console.log('===', focusPlanet, '===');
+    console.log(planetMap.get(focusPlanet));
   }
-  pop();
+
+  //draw the planets
+  let entries = planetMap.entries();
+  for (let [key, value] of entries) {
+    console.log(key,value);
+    let planetName = key;
+    let positions = value;
+
+    //now draw the planet based on the information 
+  }
 
 }
 
