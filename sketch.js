@@ -4,13 +4,14 @@ var ready = false;
 var goldenRatio = 1.61803398875;
 var data = [];
 var planets = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-let focusPlanet = 'mars';
-let focusPlanet2 = 'venus';
 let baseUrl = 'http://127.0.0.1:5000/planet/';
 let GEO = 'geo';
 let HELIO = 'helio';
 
 let radScale = 100;
+
+//Data of a planet
+let pdata = [];
 
 let sfMedium;
 let sfBold;
@@ -26,13 +27,90 @@ function preload() {
 function setup() {
   createCanvas(800, 600);
   noLoop();
+
+  //set start and end date
+  let startDate = new Date(2000, 0, 1);
+  let endDate = new Date(startDate);
+  let days = 80;
+  let incDays = 1;
+  endDate.setDate(startDate.getDate() + days);
+  loadData('mercury', HELIO, startDate,endDate,incDays);
 }
 
 function draw() {
+  
+  if(!ready){
+    background('red');
+    return;
+  }
+  
   background('rgb(250,250,250)');
 
-  planetsHeliocentric();
+  let scl = 100;
+  push();
+  translate(width/2,height/2);
+  drawPlanet(pdata,scl);
+  pop();
 
+}
+
+function drawPlanet(pdata,scl){
+
+  push();
+
+
+
+  //draw the sun
+  fill(0);
+  ellipse(0,0,3,3);
+
+  noFill();
+  stroke(0);
+  beginShape();
+  _.each(pdata,d=>{
+      let angle = d.pos;
+    
+      let r = scl*d.distance;//map(pdata.distance, 0, maxDistance, 0, maxRadius);
+
+      let v = p5.Vector.fromAngle(radians(angle), r);
+
+      console.log(r,angle,v.x,v.y);
+      vertex(v.x, v.y);
+  });
+  endShape();
+  pop();
+}
+
+function loadData(planetName,mode,startDate,endDate,incDays){
+
+  ready = false;
+  currentDate = new Date(startDate);
+  var promises = [];
+  let count = 0;
+  while (currentDate < endDate) {
+  
+    currentDate.setDate(currentDate.getDate() + incDays);
+  
+    let date = currentDate;
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let url = baseUrl + mode + '/' + planetName + '/' + [day, month, year].join('/');
+   
+    promises.push(d3.json(url))
+
+    count++;
+  }
+
+  Promise.all(promises).then(function (values) {
+    console.log('Promise.all');
+
+    pdata = values;
+    console.log('pdata',pdata);
+    ready = true;
+    redraw();
+
+  });
 }
 
 function planetsHeliocentric() {
