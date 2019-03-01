@@ -20,11 +20,13 @@ let sfMedium;
 let sfBold;
 let sfLight;
 let planetyears = {};
+let planetscales = {};
 function preload() {
   sfLight = loadFont('assets/SF-Pro-Text-Light.otf');
   sfMedium = loadFont('assets/SF-Pro-Text-Medium.otf');
   sfBold = loadFont('assets/SF-Pro-Display-Bold.otf');
   planetyears = loadJSON('planetyears.json');
+  planetscales = loadJSON('planetscales.json');
 }
 
 function setup() {
@@ -39,6 +41,11 @@ function setup() {
   endDate.setDate(startDate.getDate() + days);
   loadData('mercury', HELIO, startDate, endDate, incDays, dataReady);
   loadData('venus', HELIO, startDate, endDate, incDays, dataReady);
+  loadData('earth', HELIO, startDate, endDate, incDays, dataReady);
+  loadData('mars', HELIO, startDate, endDate, incDays, dataReady);
+
+  //TODO
+  //placing planet position by count
 }
 
 function draw() {
@@ -55,10 +62,16 @@ function draw() {
   console.log('planets');
   console.log(planets);
   push();
-  translate(300,300);
+  translate(200,200);
+  let count = 0;
+  let gap = 100;
   for (let [planetName, planetData] of planets) {
-    let scl = 100;
+    let scl = planetscales[planetName];
+    push();
+    translate(count*gap,0);
     drawPlanet(planetData,scl);
+    pop();
+    count++;
   }
   pop();
 
