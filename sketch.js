@@ -128,9 +128,6 @@ function planetsHeliocentric() {
   //draw all the planets, their traces over a period of time 
   //drawing those traces, in a grid style
 
-
-
-
   let inc = 10;
 
   let mode = GEO;
@@ -199,6 +196,7 @@ function drawPlanets(planetMap){
   let y = 0;
   let maxRadius = 100;
   let plutoData = planetMap.get('pluto');
+  console.log('plutoData');
   console.log(plutoData);
   let maxDistance = d3.max(plutoData,d=>{
     return d.distance;
@@ -243,24 +241,24 @@ function drawPlanets(planetMap){
   pop();
 }
 
-function update() {
-  console.log('hi');
-  //let val = slider.value();
-  // let date = new Date(val);
-  currentDate.setDate(currentDate.getDate() + 5);
-  let date = currentDate;
-  let day = date.getDate();
-  let month = date.getMonth() + 1;
-  let year = date.getFullYear();
-  let url1 = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
-  let url2 = baseUrl + mode + '/' + focusPlanet2 + '/' + [day, month, year].join('/');
-  console.log(url1);
-  console.log(url2);
-  pos1 = null;
-  pos2 = null;
-  loadJSON(url1, updatePos1);
-  loadJSON(url2, updatePos2);
-}
+// function update() {
+//   console.log('hi');
+//   //let val = slider.value();
+//   // let date = new Date(val);
+//   currentDate.setDate(currentDate.getDate() + 5);
+//   let date = currentDate;
+//   let day = date.getDate();
+//   let month = date.getMonth() + 1;
+//   let year = date.getFullYear();
+//   let url1 = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
+//   let url2 = baseUrl + mode + '/' + focusPlanet2 + '/' + [day, month, year].join('/');
+//   console.log(url1);
+//   console.log(url2);
+//   pos1 = null;
+//   pos2 = null;
+//   loadJSON(url1, updatePos1);
+//   loadJSON(url2, updatePos2);
+// }
 
 // function updatePos(planet){
 
@@ -273,30 +271,30 @@ function update() {
 
 // }
 
-function updatePos1(planet) {
-  console.log('updatePos1');
-  let angle = planet.pos;
-  let r = radScale * planet.distance;
-  let v = p5.Vector.fromAngle(radians(angle), r);
-  pos1 = v;
-  positions.push(v);
-  tryRedraw();
-}
+// function updatePos1(planet) {
+//   console.log('updatePos1');
+//   let angle = planet.pos;
+//   let r = radScale * planet.distance;
+//   let v = p5.Vector.fromAngle(radians(angle), r);
+//   pos1 = v;
+//   positions.push(v);
+//   tryRedraw();
+// }
 
-function updatePos2(planet) {
-  console.log('updatePos2');
-  let angle = planet.pos;
-  let r = radScale * planet.distance;
-  let v = p5.Vector.fromAngle(radians(angle), r);
-  pos2 = v;
-  positions2.push(v);
-  tryRedraw();
-}
+// function updatePos2(planet) {
+//   console.log('updatePos2');
+//   let angle = planet.pos;
+//   let r = radScale * planet.distance;
+//   let v = p5.Vector.fromAngle(radians(angle), r);
+//   pos2 = v;
+//   positions2.push(v);
+//   tryRedraw();
+// }
 
-function tryRedraw() {
-  if (pos1 && pos2) {
-    pos1 = null;
-    pos2 = null;
-    redraw();
-  }
-}
+// function tryRedraw() {
+//   if (pos1 && pos2) {
+//     pos1 = null;
+//     pos2 = null;
+//     redraw();
+//   }
+// }
