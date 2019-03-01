@@ -2,8 +2,8 @@
 
 var ready = false;
 var goldenRatio = 1.61803398875;
-var data = [];
-var planets = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+
+var planetNames = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
 let baseUrl = 'http://127.0.0.1:5000/planet/';
 let GEO = 'geo';
 let HELIO = 'helio';
@@ -11,7 +11,10 @@ let HELIO = 'helio';
 let radScale = 100;
 
 //Data of a planet
-let pdata = [];
+//let pdata = [];
+
+//data of all planets
+var planetMap = new Map();
 
 let sfMedium;
 let sfBold;
@@ -34,27 +37,34 @@ function setup() {
   let days = 80;
   let incDays = 1;
   endDate.setDate(startDate.getDate() + days);
-  loadData('mercury', HELIO, startDate,endDate,incDays);
+  loadData('mercury', HELIO, startDate, endDate, incDays, dataReady);
+  loadData('venus', HELIO, startDate, endDate, incDays, dataReady);
 }
 
 function draw() {
-  
-  if(!ready){
+
+  if (!ready) {
     background('red');
     return;
   }
-  
+
   background('rgb(250,250,250)');
 
   let scl = 100;
+  let planets = planetMap.entries();
+  console.log('planets');
+  console.log(planets);
   push();
-  translate(width/2,height/2);
-  drawPlanet(pdata,scl);
+  translate(300,300);
+  for (let [planetName, planetData] of planets) {
+    let scl = 100;
+    drawPlanet(planetData,scl);
+  }
   pop();
 
 }
 
-function drawPlanet(pdata,scl){
+function drawPlanet(pdata, scl) {
 
   push();
 
@@ -62,41 +72,42 @@ function drawPlanet(pdata,scl){
 
   //draw the sun
   fill(0);
-  ellipse(0,0,3,3);
+  ellipse(0, 0, 3, 3);
 
   noFill();
   stroke(0);
   beginShape();
-  _.each(pdata,d=>{
-      let angle = d.pos;
-    
-      let r = scl*d.distance;//map(pdata.distance, 0, maxDistance, 0, maxRadius);
+  _.each(pdata, d => {
+    let angle = d.pos;
 
-      let v = p5.Vector.fromAngle(radians(angle), r);
+    let r = scl * d.distance;//map(pdata.distance, 0, maxDistance, 0, maxRadius);
 
-      console.log(r,angle,v.x,v.y);
-      vertex(v.x, v.y);
+    let v = p5.Vector.fromAngle(radians(angle), r);
+
+    console.log(r, angle, v.x, v.y);
+    vertex(v.x, v.y);
   });
   endShape();
   pop();
 }
 
-function loadData(planetName,mode,startDate,endDate,incDays){
+function loadData(planetName, mode, startDate, endDate, incDays, callback) {
 
   ready = false;
+
   currentDate = new Date(startDate);
   var promises = [];
   let count = 0;
   while (currentDate < endDate) {
-  
+
     currentDate.setDate(currentDate.getDate() + incDays);
-  
+
     let date = currentDate;
     let day = date.getDate();
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
     let url = baseUrl + mode + '/' + planetName + '/' + [day, month, year].join('/');
-   
+
     promises.push(d3.json(url))
 
     count++;
@@ -105,73 +116,75 @@ function loadData(planetName,mode,startDate,endDate,incDays){
   Promise.all(promises).then(function (values) {
     console.log('Promise.all');
 
-    pdata = values;
-    console.log('pdata',pdata);
-    ready = true;
-    redraw();
+    //pdata = values;
+    callback(planetName,values);
+    // console.log('pdata',pdata);
+
+    // ready = true;
+    // redraw();
 
   });
 }
 
-function planetsHeliocentric() {
-  //draw all the planets, their traces over a period of time 
-  //drawing those traces, in a grid style
+// function planetsHeliocentric() {
+//   //draw all the planets, their traces over a period of time 
+//   //drawing those traces, in a grid style
 
-  let inc = 10;
+//   let inc = 10;
 
-  let mode = GEO;
+//   let mode = GEO;
 
-  let planetMap = new Map();
-
-
-  var promises = [];
-  for (let i = 0; i < planets.length; i++) {
-
-    const focusPlanet = planets[i];
-
-    let startDate = new Date(2000, 0, 1);
-    let endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + planetyears[focusPlanet]);
-    console.log('===', focusPlanet, '===');
-    console.log('startdate', startDate);
-    console.log('enddata', endDate);
-    let currentDate = startDate;
-
-    currentDate = new Date(startDate);
-
-    let count = 0;
+//   let planetMap = new Map();
 
 
-    while (currentDate < endDate) {
+//   var promises = [];
+//   for (let i = 0; i < planets.length; i++) {
 
-      currentDate.setDate(currentDate.getDate() + inc);
-      // console.log('count',count,currentDate);
-      let date = currentDate;
-      let day = date.getDate();
-      let month = date.getMonth() + 1;
-      let year = date.getFullYear();
-      let url = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
-      promises.push(d3.json(url))
+//     const focusPlanet = planets[i];
 
-      count++;
-    }
-  }
+//     let startDate = new Date(2000, 0, 1);
+//     let endDate = new Date(startDate);
+//     endDate.setDate(startDate.getDate() + planetyears[focusPlanet]);
+//     console.log('===', focusPlanet, '===');
+//     console.log('startdate', startDate);
+//     console.log('enddata', endDate);
+//     let currentDate = startDate;
 
-  Promise.all(promises).then(function (values) {
-    console.log('Promise.all');
+//     currentDate = new Date(startDate);
 
-    planets.forEach(p => {
-      let arr = values.filter(v => {
-        return v.name == p;
-      });
-      planetMap.set(p, arr);
-    });
-    console.log('planetMap');
-    console.log(planetMap);
-    drawPlanets(planetMap);
+//     let count = 0;
 
-  });
-}
+
+//     while (currentDate < endDate) {
+
+//       currentDate.setDate(currentDate.getDate() + inc);
+//       // console.log('count',count,currentDate);
+//       let date = currentDate;
+//       let day = date.getDate();
+//       let month = date.getMonth() + 1;
+//       let year = date.getFullYear();
+//       let url = baseUrl + mode + '/' + focusPlanet + '/' + [day, month, year].join('/');
+//       promises.push(d3.json(url))
+
+//       count++;
+//     }
+//   }
+
+//   Promise.all(promises).then(function (values) {
+//     console.log('Promise.all');
+
+//     planets.forEach(p => {
+//       let arr = values.filter(v => {
+//         return v.name == p;
+//       });
+//       planetMap.set(p, arr);
+//     });
+//     console.log('planetMap');
+//     console.log(planetMap);
+//     drawPlanets(planetMap);
+
+//   });
+// }
 
 function drawPlanets(planetMap) {
   console.log('draw planets');
@@ -223,4 +236,12 @@ function drawPlanets(planetMap) {
     }
   }
   pop();
+}
+
+function dataReady (pname,pdata) {
+  //console.log('pdata', pdata);
+  planetMap.set(pname, pdata);
+  ready= true;
+  redraw();
+  //ready = true; 
 }
